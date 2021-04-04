@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
-from geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega
+from .geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
+from .geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega
 
-from swsh.swsh import calc_swsh_eq
+from .swsh.swsh import calc_swsh_eq
 
-from renormnu.renormnu import find_nu
+from .renormnu.renormnu import find_nu
 
-from flux.flux import flux_inf
+from .flux.flux import flux_inf
 
 # from swsh.swsh import calc_swsh_eq
 
