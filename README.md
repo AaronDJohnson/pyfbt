@@ -16,4 +16,4 @@
  See the .ipynb file included for some basic examples.
 
 ## Contribute
- This code is a work in progress. If you find it useful, then I encourage you to fork it an continue work on it.
+ This code is a work in progress. If you find it useful, then I encourage you to fork it and help me add features to it. Tests and documentation coming (hopefully) soon.
