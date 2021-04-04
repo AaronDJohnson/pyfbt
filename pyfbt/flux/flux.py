@@ -9,7 +9,7 @@ from geodesic.coordinates.coords_circ_eq import calc_circular_eq_coords
 from source.tsource import eq_source
 from teukolsky.functions import teukolsky_soln, calc_Bin_mp
 
-from scipy.integrate import quad, fixed_quad
+from scipy.integrate import quad
 
 import numpy as np
 
@@ -112,12 +112,12 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
         return result
 
 
-    @functools.lru_cache()
+    # @functools.lru_cache()
     def find_integrand_ce(psi):
         t, r, __, phi = calc_circular_eq_coords(psi, En, Lz, aa, slr, M=M)
-        Rin = R_vec[0]
-        dRdr = R_vec[1]
-        dRdr2 = R_vec[2]
+        # Rin = R_vec[0]
+        # dRdr = R_vec[1]
+        # dRdr2 = R_vec[2]
         # Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
         # if np.isnan(np.real(Rin)):
         #     print('r =', r)
@@ -171,10 +171,10 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
     # def integrand_im(zeta):
     #     return np.imag(integrand(zeta))
 
-    def cheap_re(zeta):
+    def ce_re(zeta):
         return np.real(find_integrand_ce(zeta))
 
-    def cheap_im(zeta):
+    def ce_im(zeta):
         return np.imag(find_integrand_ce(zeta))
 
     # a = 0
@@ -188,24 +188,15 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
 
     
     if ecc == 0 and x**2 == 1:
-        # print('nu =', nu)
-        # print('eigen =', eigen)
-        # print('aa =', aa)
-        # print('omega =', omega)
-        # print('em =', em)
-        psi = 0
         r = slr
         Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
-        t, r, __, phi = calc_circular_eq_coords(psi, En, Lz, aa, slr, M=M)
-        J, V_t, V_r, I_plus = eq_source(psi, 1, slr, ecc, aa, omega, em, Lz,
-                                        En, Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
-        _, _, _, I_minus = eq_source(psi, -1, slr, ecc, aa, omega, em, Lz,
-                                     En, Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
-        res = np.pi * (
-            V_t / (J * np.sqrt(V_r)) *
-            (I_plus * np.exp(1j * omega * t - 1j * em * phi) +
-             I_minus * np.exp(-1j * omega * t + 1j * em * phi))
-        )
+        re_res, re_err = quad(ce_re, 0, np.pi)
+        im_res, im_err = quad(ce_im, 0, np.pi)
+        # res2, __, __ = trapezoidal_rule(find_integrand_ce, 0, np.pi)
+        # print(res2)
+        res = re_res + 1j * im_res
+        # print(res)
+
     else:
         res, re_err, im_err = trapezoidal_rule(find_psi_integrand, 0, np.pi)
 
