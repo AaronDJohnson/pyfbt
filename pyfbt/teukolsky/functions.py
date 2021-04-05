@@ -75,7 +75,7 @@ def teukolsky_soln_mp(r, nu, eigen, aa, omega, em, ess=-2, M=1, tol=1e-12):
 def teukolsky_soln(r, nu, eigen, aa, omega, em, ess=-2, M=1, tol=1e-12):
     Rin, Rdin, Rddin = teukolsky_soln_fp(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
     if np.isnan(Rin) or np.isnan(Rdin) or np.isnan(Rddin):
-        Rin, Rdin, Rddin = teukolsky_soln_mp(r, nu, eigen, aa, omega, em, ess=-2, M=1, tol=1e-12)
+        Rin, Rdin, Rddin = teukolsky_soln_mp(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
     return Rin, Rdin, Rddin
 
 

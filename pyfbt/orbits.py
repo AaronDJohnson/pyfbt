@@ -105,7 +105,7 @@ class Orbit:
         else:
             self.kay = kay
 
-        print(self.en, self.em, self.kay)
+        # print(self.en, self.em, self.kay)
         self.omega = self.en * self.omega_r + self.em * self.omega_phi + self.kay * self.omega_theta
         self.eigen, self.Slm, self.Slmd, self.Slmdd = calc_swsh_eq(0, self.aa, self.omega, self.ell, self.em)
         self.nu = find_nu(self.aa, self.omega, self.eigen, self.ell, self.em, tol=1e-20)
@@ -119,8 +119,6 @@ class Orbit:
             self.E_inf = 2 * self.E_inf
 
         return self.E_inf
-        
-
 
 
 

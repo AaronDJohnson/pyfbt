@@ -215,9 +215,9 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
 
 def flux_inf(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi,
              gamma, omega, em, Lz, En, Slm, Slmd, Slmdd, omega_r, r1, r2,
-             r3, r4, zp, zm, ess=-2):
+             r3, r4, zp, zm, ess=-2, tol=1e-12):
     Z = eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
                     omega, em, Lz, En, Slm, Slmd, Slmdd, omega_r, r1, r2, r3, r4, zp,
-                    zm, ess=ess)
+                    zm, ess=ess, tol=tol)
     energy = abs(Z)**2 / (4 * np.pi * omega**2)
     return energy, Z
