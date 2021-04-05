@@ -1,8 +1,10 @@
 import numpy as np
 from mpmath import mpc, sqrt, gamma, cos, acos, re, im, mp, pi
 
+from .swsh_leaver import swsh_constants, swsh_eigen
 
-def monodromy_nu(aa, omega, eigen, ell, em, nmax, ess=-2):
+
+def monodromy_nu(aa, omega, ell, em, nmax, ess=-2):
     """
     This is the monodromy method used to compute nu in the BHPTK.
 
@@ -18,11 +20,13 @@ def monodromy_nu(aa, omega, eigen, ell, em, nmax, ess=-2):
     Returns:
         nu (mpf): renormalized angular momentum
     """
-
     nhalf = nmax // 2 + 1
     epsilon = 2 * omega
     kappa = sqrt(1 - aa**2)
     tau = (epsilon - em * aa) / kappa
+    
+    c, km, kp, nInv = swsh_constants(aa, omega, ell, em, ess=ess)
+    xmin, eigen = swsh_eigen(c, km, kp, ell, em, nInv, ess=ess)
 
     # parameters for confluent Heun eqn.
     gamma_ch = 1 - ess - 1j * epsilon - 1j * tau
@@ -134,10 +138,10 @@ def monodromy_nu(aa, omega, eigen, ell, em, nmax, ess=-2):
         nu_0 = -1j * im(acos(re(c2pn)) / (2 * pi))
     # print("nu_0 = ", nu_0)
     # print(region)
-    return nu_0
+    return nu_0, eigen
 
 
-def find_nu(aa, omega, eigen, ell, em, ess=-2, tol=10**(-mp.dps)):
+def find_nu(aa, omega, ell, em, ess=-2, tol=10**(-mp.dps)):
     """
     Compute renormalized angular momentum, nu, to some tolerance.
 
@@ -156,15 +160,15 @@ def find_nu(aa, omega, eigen, ell, em, ess=-2, tol=10**(-mp.dps)):
     """
     nmax = 100
     nu0 = 1e30
-    nu = monodromy_nu(aa, omega, eigen, ell, em, nmax, ess)
+    nu, eigen = monodromy_nu(aa, omega, ell, em, nmax, ess)
     while abs(nu - nu0) / abs(nu0) > tol:
         nu0 = nu
         nmax *= 2
-        nu = monodromy_nu(aa, omega, eigen, ell, em, nmax, ess)
+        nu, eigen = monodromy_nu(aa, omega, ell, em, nmax, ess)
         if nmax > 800:
             print("nu failed to converge.")
             return 0
-    return re(nu), im(nu)
+    return nu, eigen
 
 
 

@@ -1,14 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
-from .geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega
+try:
+    from .geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
+    from .geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega
 
-from .swsh.swsh import calc_swsh_eq
+    from .swsh.swsh import calc_swsh_eq
 
-from .renormnu.renormnu import find_nu
+    from .renormnu.renormnu import find_nu
 
-from .flux.flux import flux_inf
+    from .flux.flux import flux_inf
+except:
+    from geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
+    from geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega
+
+    from swsh.swsh import calc_swsh_eq
+
+    from renormnu.renormnu import find_nu
+
+    from flux.flux import flux_inf
 
 # from swsh.swsh import calc_swsh_eq
 
@@ -108,8 +118,9 @@ class Orbit:
         # print(self.en, self.em, self.kay)
         self.omega = self.en * self.omega_r + self.em * self.omega_phi + self.kay * self.omega_theta
         self.eigen, self.Slm, self.Slmd, self.Slmdd = calc_swsh_eq(0, self.aa, self.omega, self.ell, self.em)
-        self.nu = find_nu(self.aa, self.omega, self.eigen, self.ell, self.em, tol=1e-20)
-        self.nu = float(self.nu[0]) + 1j * float(self.nu[1])
+        self.nu, self.eigen = find_nu(self.aa, self.omega, self.ell, self.em, tol=1e-20)
+        self.nu = complex(self.nu)
+        self.eigen = float(self.eigen)
         self.E_inf, __ = flux_inf(self.nu, self.eigen, self.slr, self.ecc, self.aa,
                                   self.x, self.ups_r, self.ups_theta, self.ups_phi,
                                   self.gamma, self.omega, self.em, self.Lz, self.En,

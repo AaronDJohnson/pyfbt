@@ -60,19 +60,8 @@ def trapezoidal_rule(f, a, b, tol=1e-8):
 def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
               omega, em, Lz, En, Slm, Slmd, Slmdd, omega_r, r1, r2, r3, r4, zp,
               zm, ess=-2, M=1, tol=1e-12):
-
-    # print(type(nu))
-    # print(type(Bin))
-    # print(type(eigen))
-    # print(type(slr))
-    # print(type(ecc))
-    # print(type(aa))
-    # print(type(omega))
-    # print(type(Lz))
-    # print(type(En))
-    # print(type(omega_r))
-    # print(type(r1))
-    # print(type(zp))
+    nmax, Bin = calc_Bin_mp(nu, aa, omega, em, eigen)
+    Bin = complex(Bin)
 
     @functools.lru_cache()
     def find_psi_integrand(psi):
@@ -94,7 +83,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
                                                 slr,
                                                 ecc,)
         # print(r, nu, eigen, aa, omega, em)
-        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
         # if np.isnan(np.real(Rin)):
         #     print('r =', r)
         #     print('Rin =', Rin)
@@ -189,7 +178,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
     
     if ecc == 0 and x**2 == 1:
         r = slr
-        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, tol=tol)
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
         re_res, re_err = quad(ce_re, 0, np.pi)
         im_res, im_err = quad(ce_im, 0, np.pi)
         # res2, __, __ = trapezoidal_rule(find_integrand_ce, 0, np.pi)
@@ -205,8 +194,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
 
     # re_res = romberg(integrand_re, a, b, divmax=20)
     # im_res = romberg(integrand_im, a, b, divmax=20)
-    Bin = calc_Bin_mp(nu, aa, omega, em, eigen)
-    Bin = complex(Bin)
+    
     # print(Bin)
     # Z = omega_r / (2 * 1j * omega * Bin) * (re_res + 1j * im_res)
     Z = omega_r / (2 * 1j * omega * Bin) * res
