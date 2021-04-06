@@ -10,6 +10,7 @@ try:
     from .renormnu.renormnu import find_nu
 
     from .flux.flux import flux_inf
+
 except:
     from geodesic.geodesic import calc_consts, calc_radial_roots, calc_polar_roots
     from geodesic.geodesic import calc_mino_freqs, calc_boyer_freqs, find_omega

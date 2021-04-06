@@ -14,7 +14,6 @@ setuptools.setup(
     url="https://github.com/AaronDJohnson/pyfbt",
     packages=setuptools.find_packages(),
     install_requires=[
-        'gmpy',
         'numpy',
         'mpmath',
         'matplotlib',

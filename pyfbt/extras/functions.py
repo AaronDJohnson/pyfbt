@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def en_search(orbit, ell, em, en_min, en_max):
@@ -12,7 +13,7 @@ def en_search(orbit, ell, em, en_min, en_max):
     return results
 
 
-def plot_modes(results, normed=True):
+def plot_modes(results, normed=True, enmax=True):
     """
     plot results from en_search
     """

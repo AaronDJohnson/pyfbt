@@ -1,7 +1,10 @@
 from mpmath import mp, mpf, exp, gamma, sign
-from renormnu.swsh_contfrac import contfracK
 import numpy as np
 
+try:
+    from .swsh_contfrac import contfracK
+except:
+    from swsh_contfrac import contfracK
 
 def alpha_gamma(aa, omega, ell, em, nmax, ess=-2):
     """

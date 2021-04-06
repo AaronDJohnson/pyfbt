@@ -1,7 +1,10 @@
 import numpy as np
 from mpmath import mpc, sqrt, gamma, cos, acos, re, im, mp, pi
 
-from .swsh_leaver import swsh_constants, swsh_eigen
+try:
+    from .swsh_leaver import swsh_constants, swsh_eigen
+except:
+    from swsh_leaver import swsh_constants, swsh_eigen
 
 
 def monodromy_nu(aa, omega, ell, em, nmax, ess=-2):
