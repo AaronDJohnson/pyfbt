@@ -12,8 +12,7 @@ from teukolsky.functions import teukolsky_soln, calc_Bin_mp
 from scipy.integrate import quad
 
 import numpy as np
-
-from mpmath import mp
+import mpmath as mp
 
 # TODO (aaron): set up special case of circular orbits (no integral in this case)
 
@@ -129,51 +128,57 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
     # coeff = abs(find_psi_integrand(0)) / abs(find_psi_integrand(np.pi))
     # print(coeff)
 
-    # def integrand(zeta):
-    #     psi = coeff * np.log(1 + zeta / coeff)
-    #     dchi_dzeta = np.exp(-psi / coeff)
+    def integrand(zeta):
+        chi = psi * mp.log(1 + zeta / psi)
+        # print('chi = ', chi)
+        dchi_dzeta = mp.exp(-chi / psi)
+        # print(dchi_dzeta)
+        t, r, __, phi = calc_equatorial_coords(
+                                                float(chi),
+                                                ups_r,
+                                                ups_theta,
+                                                ups_phi,
+                                                gamma,
+                                                r1,
+                                                r2,
+                                                r3,
+                                                r4,
+                                                zp,
+                                                zm,
+                                                En,
+                                                Lz,
+                                                aa,
+                                                slr,
+                                                ecc,)
 
-    #     t, r, __, phi = py_calc_equatorial_coords(psi, ups_r, ups_theta,
-    #                                               ups_phi, gamma, r1,
-    #                                               r2, r3, r4, zp, zm, En, Lz,
-    #                                               aa, slr, ecc)
+        # start_time = time()
 
-    #     re_nu = np.real(nu)
-    #     im_nu = np.imag(nu)
-    #     Rin, dRdr, dRdr2 = py_find_R(r, re_nu, im_nu, aa, omega, em, eigen)
-    #     J, V_t, V_r, I_plus = eq_source(psi, 1, slr, ecc, aa, omega, em, Lz,
-    #                                     En, Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
-    #     _, _, _, I_minus = eq_source(psi, -1, slr, ecc, aa, omega, em, Lz,
-    #                                  En, Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
+        # TODO: use cython (with arb) to improve this!
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
+        
+        J, V_t, V_r, I_plus = eq_source(float(chi), 1, slr, ecc, aa, omega, em, Lz, En,
+                                        Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
 
-    #     result = (
-    #         V_t / (J * np.sqrt(V_r)) *
-    #         (I_plus * np.exp(1j * omega * t - 1j * em * phi) +
-    #          I_minus * np.exp(-1j * omega * t + 1j * em * phi))
-    #     ) * dchi_dzeta
-    #     # print(result)
-    #     return result
+        _, _, _, I_minus = eq_source(float(chi), -1, slr, ecc, aa, omega, em, Lz, En,
+                                              Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
+        result = (
+            V_t / (J * np.sqrt(V_r)) *
+            (I_plus * np.exp(1j * omega * t - 1j * em * phi) +
+             I_minus * np.exp(-1j * omega * t + 1j * em * phi))
+        ) * dchi_dzeta
+        return result
 
-    # def integrand_re(zeta):
-    #     return np.real(integrand(zeta))
+    def integrand_re(zeta):
+        return mp.re(integrand(zeta))
 
-    # def integrand_im(zeta):
-    #     return np.imag(integrand(zeta))
+    def integrand_im(zeta):
+        return mp.im(integrand(zeta))
 
     def ce_re(zeta):
         return np.real(find_integrand_ce(zeta))
 
     def ce_im(zeta):
         return np.imag(find_integrand_ce(zeta))
-
-    # a = 0
-    # mp.dps += 50
-    # TODO: fix overflow in the following line
-    # b = float((np.exp(np.pi / coeff) - 1) * coeff)
-    # print(b)
-    # print("b = ", b)
-    # re_res, re_err = quad(integrand_re, a, b)
-    # im_res, im_err = quad(integrand_im, a, b)
 
     
     if ecc == 0 and x**2 == 1:
@@ -185,6 +190,18 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
         # print(res2)
         res = re_res + 1j * im_res
         # print(res)
+
+    elif ecc > 0.9:  # should this be a little lower? (0.8 or something?)
+        # transform the integral to something more tractable
+        mp.dps = 100
+        psi = abs(find_psi_integrand(0)) / abs(find_psi_integrand(np.pi))
+        a = mp.mpf(0)
+        b = (mp.exp(mp.pi / psi) - 1) * psi
+        realpart, err_re = mp.quadgl(integrand_re, [a, b], error=True)
+        #  print('realpart = ' + str(realpart))
+        imagpart, err_im = mp.quadgl(integrand_im, [a, b], error=True)
+        res = float(realpart) + 1j * float(imagpart)
+        # print('imagpart = ' + str(imagpart))
 
     else:
         res, re_err, im_err = trapezoidal_rule(find_psi_integrand, 0, np.pi)
