@@ -82,7 +82,7 @@ class Orbit:
         self.boyer_freqs = {'omega_r':self.omega_r, 'omega_theta':self.omega_theta, 'omega_phi':self.omega_phi}
 
 
-    def energy_inf(self, ell=None, em=None, en=None, kay=None):
+    def energy_inf(self, ell=None, em=None, en=None, kay=None, tol=1e-12):
         """
         Set the (ell, em) mode that we want to compute and compute E_inf associated with it.
 
@@ -126,7 +126,7 @@ class Orbit:
                                   self.x, self.ups_r, self.ups_theta, self.ups_phi,
                                   self.gamma, self.omega, self.em, self.Lz, self.En,
                                   self.Slm, self.Slmd, self.Slmdd, self.omega_r,
-                                  self.r1, self.r2, self.r3, self.r4, self.zp, self.zm)
+                                  self.r1, self.r2, self.r3, self.r4, self.zp, self.zm, tol=tol)
         if self.double:
             self.E_inf = 2 * self.E_inf
 

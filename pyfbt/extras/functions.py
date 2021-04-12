@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def en_search(orbit, ell, em, en_min, en_max):
     res_list = []
     for en in range(en_min, en_max + 1):
-        E_inf = orbit.energy_inf(ell=ell, em=em, en=en)
+        E_inf = orbit.energy_inf(ell=ell, em=em, en=en, tol=1e-7)
         results = [ell, em, en, E_inf]
         print(results)
         res_list.append(results)
