@@ -99,7 +99,7 @@ def find_h(r, i, j, nu, epsilon, kappa, tau, omega, ess=-2):
 
 
 @jit(nopython=True)
-def R_2F1(r, f, nu, aa, omega, em, k_vec, hm2, hm1, ess=-2, nmax=100):
+def R_2F1(r, f, nu, aa, omega, em, k_vec, hm2, hm1, ess, nmax):
     """
     Teukolsky solution: B.2 in Throwe's thesis
 
@@ -164,7 +164,7 @@ def R_2F1(r, f, nu, aa, omega, em, k_vec, hm2, hm1, ess=-2, nmax=100):
 
 
 @jit(nopython=True)
-def dR_2F1dr(r, Rin, y, hypgeo_vec, f, nu, aa, omega, em, k_vec, hm2, hm1, ess=-2, nmax=100):
+def dR_2F1dr(r, Rin, y, hypgeo_vec, f, nu, aa, omega, em, k_vec, hm2, hm1, ess, nmax):
     """
     analytic derivative of B.2 in Throwe's thesis
 
@@ -245,19 +245,19 @@ def dR_2F1dr2(r, R, Rd, V, aa, M=1):
     return Rdd
 
 
-def calc_R(r, nu, eigen, aa, omega, em, nmax=100, ess=-2, M=1):
+def calc_R(r, f, nu, eigen, aa, omega, em, nmax=100, ess=-2, M=1):
     nhalf = nmax // 2
     k_vec = np.arange(-(nhalf - 1), nhalf)
-    __, __, f = calc_min_sol(eigen, nu, omega, aa, em, nmax=nmax, ess=ess, M=M)
+    # __, __, f = calc_min_sol(eigen, nu, omega, aa, em, nmax=nmax, ess=ess, M=M)
     epsilon, kappa, tau = f_const(aa, omega, em, M=M)
 
     hm2 = find_h(r, 2, 0, nu, epsilon, kappa, tau, omega, ess=ess)
     hm1 = find_h(r, 1, 0, nu, epsilon, kappa, tau, omega, ess=ess)
-    Rin, y, hypgeo_vec = R_2F1(r, f, nu, aa, omega, em, k_vec, hm2, hm1, ess=ess, nmax=nmax)
+    Rin, y, hypgeo_vec = R_2F1(r, f, nu, aa, omega, em, k_vec, hm2, hm1, ess, nmax)
 
     hm2p1 = find_h(r, 1, 1, nu, epsilon, kappa, tau, omega, ess=ess)
     hm1p1 = find_h(r, 0, 1, nu, epsilon, kappa, tau, omega, ess=ess)
-    Rdin = dR_2F1dr(r, Rin, y, hypgeo_vec, f, nu, aa, omega, em, k_vec, hm2p1, hm1p1, ess=ess, nmax=nmax)
+    Rdin = dR_2F1dr(r, Rin, y, hypgeo_vec, f, nu, aa, omega, em, k_vec, hm2p1, hm1p1, ess, nmax)
 
     V = potential(r, aa, em, omega, eigen, ess=ess, M=M)
     Rddin = dR_2F1dr2(r, Rin, Rdin, V, aa, M=M)

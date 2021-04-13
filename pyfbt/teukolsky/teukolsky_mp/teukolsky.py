@@ -232,10 +232,10 @@ def find_Rin(r, f, nu, aa, omega, em, eigen, k_vec, nmax=100):
     return Rin, Rd_in, Rdd_in
 
 
-def find_R(r, nu, aa, omega, em, eigen, nmax=100):
+def find_R(r, f, nu, aa, omega, em, eigen, nmax=100):
     nhalf = nmax // 2
     k_vec = np.arange(-nhalf + 1, nhalf)
-    fneg, fpos, f = min_sol(nu, aa, omega, em, eigen, nmax=nmax)
+    # fneg, fpos, f = min_sol(nu, aa, omega, em, eigen, nmax=nmax)
     Rin, Rd_in, Rdd_in = find_Rin(r, f, nu, aa, omega, em, eigen, k_vec, nmax=nmax)
     return Rin, Rd_in, Rdd_in
 

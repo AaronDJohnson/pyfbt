@@ -59,10 +59,18 @@ def trapezoidal_rule(f, a, b, tol=1e-8):
 def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
               omega, em, Lz, En, Slm, Slmd, Slmdd, omega_r, r1, r2, r3, r4, zp,
               zm, ess=-2, M=1, tol=1e-12):
-    nmax, Bin = calc_Bin_mp(nu, aa, omega, em, eigen)
+    
+    nmax, f_mp, Bin = calc_Bin_mp(nu, aa, omega, em, eigen)
+    f_fp = np.zeros_like(f_mp, dtype=np.complex128)
     Bin = complex(Bin)
+    # print(f_mp.size)
+    for i in range(len(f_mp)):
+        f_fp[i] = complex(f_mp[i])
 
-    @functools.lru_cache()
+
+
+
+    @functools.lru_cache(maxsize=150)
     def find_psi_integrand(psi):
         t, r, __, phi = calc_equatorial_coords(
                                                 psi,
@@ -82,7 +90,8 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
                                                 slr,
                                                 ecc,)
         # print(r, nu, eigen, aa, omega, em)
-        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
+        # print(nmax)
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, f_fp, f_mp, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
         # if np.isnan(np.real(Rin)):
         #     print('r =', r)
         #     print('Rin =', Rin)
@@ -100,7 +109,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
         return result
 
 
-    # @functools.lru_cache()
+    @functools.lru_cache(maxsize=150)
     def find_integrand_ce(psi):
         t, r, __, phi = calc_circular_eq_coords(psi, En, Lz, aa, slr, M=M)
         # Rin = R_vec[0]
@@ -127,7 +136,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
 
     # coeff = abs(find_psi_integrand(0)) / abs(find_psi_integrand(np.pi))
     # print(coeff)
-
+    @functools.lru_cache(maxsize=150)
     def integrand(zeta):
         chi = psi * mp.log(1 + zeta / psi)
         # print('chi = ', chi)
@@ -154,7 +163,7 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
         # start_time = time()
 
         # TODO: use cython (with arb) to improve this!
-        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, f_fp, f_mp, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
         
         J, V_t, V_r, I_plus = eq_source(float(chi), 1, slr, ecc, aa, omega, em, Lz, En,
                                         Slm, Slmd, Slmdd, Rin, dRdr, dRdr2)
@@ -180,10 +189,16 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
     def ce_im(zeta):
         return np.imag(find_integrand_ce(zeta))
 
+    def eq_re(psi):
+        return np.real(find_psi_integrand(psi))
+
+    def eq_im(psi):
+        return np.imag(find_psi_integrand(psi))
+
     
     if ecc == 0 and x**2 == 1:
         r = slr
-        Rin, dRdr, dRdr2 = teukolsky_soln(r, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
+        Rin, dRdr, dRdr2 = teukolsky_soln(r, f_fp, f_mp, nu, eigen, aa, omega, em, ess=ess, M=M, nmax=nmax)
         re_res, re_err = quad(ce_re, 0, np.pi)
         im_res, im_err = quad(ce_im, 0, np.pi)
         # res2, __, __ = trapezoidal_rule(find_integrand_ce, 0, np.pi)
@@ -204,7 +219,9 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
         # print('imagpart = ' + str(imagpart))
 
     else:
-        res, re_err, im_err = trapezoidal_rule(find_psi_integrand, 0, np.pi)
+        re_res, re_err = quad(eq_re, 0, np.pi)
+        im_res, im_err = quad(eq_im, 0, np.pi)
+        # res, re_err, im_err = trapezoidal_rule(find_psi_integrand, 0, np.pi)
 
     # print('Error in real part of integral:', re_err)
     # print('Error in imag part of integral:', im_err)
@@ -213,8 +230,8 @@ def eq_find_z(nu, eigen, slr, ecc, aa, x, ups_r, ups_theta, ups_phi, gamma,
     # im_res = romberg(integrand_im, a, b, divmax=20)
     
     # print(Bin)
-    # Z = omega_r / (2 * 1j * omega * Bin) * (re_res + 1j * im_res)
-    Z = omega_r / (2 * 1j * omega * Bin) * res
+    Z = omega_r / (2 * 1j * omega * Bin) * (re_res + 1j * im_res)
+    # Z = omega_r / (2 * 1j * omega * Bin) * res
     return Z
 
 

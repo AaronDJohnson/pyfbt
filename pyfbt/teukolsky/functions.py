@@ -72,10 +72,10 @@ from .teukolsky_mp.find_bin import find_Bin as find_Bin_mp
 #     return complex(R1[0]), complex(R1[1]), complex(R1[2])
 
 
-def teukolsky_soln(r, nu, eigen, aa, omega, em, ess=-2, M=1, nmax=100):
-    Rin, Rdin, Rddin = calc_R(r, nu, eigen, aa, omega, em, nmax=nmax, ess=ess, M=M)
+def teukolsky_soln(r, f_fp, f_mp, nu, eigen, aa, omega, em, ess=-2, M=1, nmax=100):
+    Rin, Rdin, Rddin = calc_R(r, f_fp, nu, eigen, aa, omega, em, nmax=nmax, ess=ess, M=M)
     if np.isnan(Rin) or np.isnan(Rdin) or np.isnan(Rddin):
-        Rin, Rdin, Rddin = find_R(r, nu, aa, omega, em, eigen, nmax=nmax)
+        Rin, Rdin, Rddin = find_R(r, f_mp, nu, aa, omega, em, eigen, nmax=nmax)
         Rin = complex(Rin)
         Rdin = complex(Rdin)
         Rddin = complex(Rddin)
@@ -102,17 +102,19 @@ def teukolsky_soln(r, nu, eigen, aa, omega, em, ess=-2, M=1, nmax=100):
 def calc_Bin_mp(nu, aa, omega, em, eigen, ess=-2, tol=1e-12):
     nmax = 100
     Bin0 = 1e30
-    __, Bin1 = find_Bin_mp(nu, nmax, aa, omega, em, eigen, ess=ess)
-    re_err = re(Bin1) - Bin0
-    im_err = im(Bin1)
+    f1, Bin1 = find_Bin_mp(nu, nmax, aa, omega, em, eigen, ess=ess)
+    re_err = abs(re(Bin1) - Bin0)
+    im_err = abs(im(Bin1))
     while re_err > tol or im_err>tol:
+        f0 = f1
+        nmax0 = nmax
         nmax *= 2
         Bin0 = Bin1
-        __, Bin1 = find_Bin_mp(nu, nmax, aa, omega, em, eigen, ess=ess)
+        f1, Bin1 = find_Bin_mp(nu, nmax, aa, omega, em, eigen, ess=ess)
         delta_Bin = Bin1 - Bin0
-        re_err = re(delta_Bin)
-        im_err = im(delta_Bin)
-    return nmax, Bin1
+        re_err = abs(re(delta_Bin))
+        im_err = abs(im(delta_Bin))
+    return nmax0, f0, Bin0
 
 
 # def calc_Bin(nu, aa, omega, em, eigen, M=1, ess=-2, tol=1e-12):

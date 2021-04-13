@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore produced data
+data/
+
 # Mac files
 .DS_Store
 

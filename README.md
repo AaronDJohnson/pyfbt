@@ -17,3 +17,6 @@
 
 ## Contribute
  This code is a work in progress. If you find it useful, then I encourage you to fork it and help me add features to it. Tests and documentation coming (hopefully) soon.
+
+## Acknowledgements
+ Some parts of this code are directly translated from the Mathematica code in the Black Hole Perturbation Toolkit [bhptoolkit.org](bhptoolkit.org).
