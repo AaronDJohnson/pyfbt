@@ -100,9 +100,6 @@ class Orbit:
         
         if em is None:
             self.em = self.ell
-        elif em == 0:
-            print('DC modes are not available yet.')  # nu throws an error with em = 0
-            self.em = 0
         else:
             self.em = em
         
@@ -116,6 +113,9 @@ class Orbit:
         else:
             self.kay = kay
 
+        if em == 0 and en == 0:
+            print('The DC mode currently does not work. Skipping it.')
+            return 0
         # print(self.en, self.em, self.kay)
         self.omega = self.en * self.omega_r + self.em * self.omega_phi + self.kay * self.omega_theta
         self.eigen, self.Slm, self.Slmd, self.Slmdd = calc_swsh_eq(0, self.aa, self.omega, self.ell, self.em)
